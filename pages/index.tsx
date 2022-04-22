@@ -1,10 +1,13 @@
+import { GetStaticProps } from "next";
 import Head from "next/head";
 import Link from "next/link";
+
+import { getSortedPostsData } from "../lib/posts";
+import { getPostTitlesFromGithub } from "../lib/fetchGithubRepo";
+
 import Layout, { siteTitle } from "../components/layout";
 import utilStyles from "../styles/utils.module.css";
-import { getSortedPostsData } from "../lib/posts";
 import Date from "../components/date";
-import { GetStaticProps } from "next";
 
 type Props = {
   allPostsData: {
@@ -12,18 +15,23 @@ type Props = {
     title: string;
     date: string;
   }[];
+  allPostTitlesFromGithub: {
+    title: string;
+  }[];
 };
 
 export const getStaticProps: GetStaticProps = async () => {
   const allPostsData = getSortedPostsData();
+  const allPostTitlesFromGithub = await getPostTitlesFromGithub();
   return {
     props: {
       allPostsData,
+      allPostTitlesFromGithub,
     },
   };
 };
 
-export default function Home({ allPostsData }: Props) {
+export default function Home({ allPostsData, allPostTitlesFromGithub }: Props) {
   return (
     <Layout home>
       <Head>
@@ -41,6 +49,18 @@ export default function Home({ allPostsData }: Props) {
               <small className={utilStyles.lightText}>
                 <Date dateString={date} />
               </small>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <h2 className={utilStyles.headingLg}>Blog from github repos</h2>
+        <ul className={utilStyles.list}>
+          {allPostTitlesFromGithub.map(({ title }) => (
+            <li className={utilStyles.listItem} key={title}>
+              <Link href={`/pithub-posts/${title}`}>
+                <a>{title}</a>
+              </Link>
             </li>
           ))}
         </ul>
